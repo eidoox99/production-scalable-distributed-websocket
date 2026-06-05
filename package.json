@@ -1,0 +1,5 @@
+{
+  "name": "realtime-production-socketio",
+  "private": true,
+  "packageManager": "pnpm@9.15.0"
+}
