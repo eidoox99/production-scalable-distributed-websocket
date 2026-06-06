@@ -1,5 +1,13 @@
 {
   "name": "realtime-production-socketio",
   "private": true,
+  "scripts": {
+    "build": "pnpm --filter @app/ws-gateway build && pnpm --filter @app/api-gateway build && pnpm --filter @app/client build",
+    "build:ws-gateway": "pnpm --filter @app/ws-gateway build",
+    "build:client": "pnpm --filter @app/client build",
+    "start:ws-gateway": "pnpm --filter @app/ws-gateway start",
+    "start:api-gateway": "pnpm --filter @app/api-gateway start",
+    "start:client": "pnpm --filter @app/client start"
+  },
   "packageManager": "pnpm@9.15.0"
 }
