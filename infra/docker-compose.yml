@@ -31,14 +31,45 @@ services:
     depends_on:
       - auth-service
 
-  ws-gateway:
+  ws-gateway-a:
     build:
       context: ..
       dockerfile: apps/ws-gateway/Dockerfile
     ports:
-      - "${WS_GATEWAY_PORT:-3001}:3001"
+      - "${WS_GATEWAY_A_PORT:-3001}:3001"
     environment:
       PORT: 3001
+      GATEWAY_ID: gateway_a
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    depends_on:
+      - redis
+
+  ws-gateway-b:
+    build:
+      context: ..
+      dockerfile: apps/ws-gateway/Dockerfile
+    ports:
+      - "${WS_GATEWAY_B_PORT:-3003}:3001"
+    environment:
+      PORT: 3001
+      GATEWAY_ID: gateway_b
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    depends_on:
+      - redis
+
+  ws-gateway-c:
+    build:
+      context: ..
+      dockerfile: apps/ws-gateway/Dockerfile
+    ports:
+      - "${WS_GATEWAY_C_PORT:-3004}:3001"
+    environment:
+      PORT: 3001
+      GATEWAY_ID: gateway_c
       REDIS_URL: redis://redis:6379
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}

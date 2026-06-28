@@ -3,13 +3,14 @@ import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
-import { getRedis } from "@pkg/shared";
-import { socketAuthMiddleware } from "./auth.js";
 import {
-  addRoomSocket,
-  addUserSocket,
-  removeSocket,
-} from "./registry.js";
+  addRoomToConnection,
+  getRedis,
+  refreshConnectionHeartbeat,
+  registerConnection,
+  removeConnection,
+} from "@pkg/shared";
+import { socketAuthMiddleware } from "./auth.js";
 
 const app = express();
 const httpServer = createServer(app);
@@ -26,30 +27,40 @@ io.adapter(createAdapter(pubClient, subClient));
 io.use(socketAuthMiddleware);
 
 const PORT = process.env.PORT ?? 3001;
+const GATEWAY_ID = process.env.GATEWAY_ID ?? "gateway_default";
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+  res.json({ status: "ok", gatewayId: GATEWAY_ID });
 });
 
-io.on("connection", (socket) => {
+io.on("connection", async (socket) => {
   const { userId } = socket.data;
 
-  addUserSocket(userId, socket.id);
-  console.log("client connected:", socket.id, "userId:", userId);
+  await registerConnection(userId, socket.id, GATEWAY_ID);
+  console.log("client connected:", socket.id, "userId:", userId, "gateway:", GATEWAY_ID);
 
-  socket.on("join-room", (roomId: string) => {
+  socket.on("join-room", async (roomId: string) => {
     if (!roomId) return;
     socket.join(roomId);
-    addRoomSocket(roomId, socket.id);
+    await addRoomToConnection(userId, roomId);
     console.log("socket joined room:", socket.id, roomId);
   });
 
-  socket.on("disconnect", () => {
-    removeSocket(socket.id, userId);
+  socket.on("ping", async () => {
+    const ok = await refreshConnectionHeartbeat(userId);
+    if (ok) {
+      socket.emit("pong");
+    } else {
+      socket.disconnect(true);
+    }
+  });
+
+  socket.on("disconnect", async () => {
+    await removeConnection(userId, socket.id);
     console.log("client disconnected:", socket.id, "userId:", userId);
   });
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`ws-gateway listening on ${PORT}`);
+  console.log(`ws-gateway [${GATEWAY_ID}] listening on ${PORT}`);
 });
