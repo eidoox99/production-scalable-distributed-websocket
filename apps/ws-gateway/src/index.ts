@@ -1,17 +1,29 @@
+import "@pkg/shared";
 import express from "express";
 import { createServer } from "http";
 import { Server } from "socket.io";
+import { createAdapter } from "@socket.io/redis-adapter";
+import { getRedis } from "@pkg/shared";
+import { socketAuthMiddleware } from "./auth.js";
+import {
+  addRoomSocket,
+  addUserSocket,
+  removeSocket,
+} from "./registry.js";
 
 const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
   },
 });
 
-const pricesNs = io.of("/prices");
-const positionsNs = io.of("/positions");
+const pubClient = getRedis();
+const subClient = pubClient.duplicate();
+io.adapter(createAdapter(pubClient, subClient));
+
+io.use(socketAuthMiddleware);
 
 const PORT = process.env.PORT ?? 3001;
 
@@ -19,22 +31,24 @@ app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
 
+io.on("connection", (socket) => {
+  const { userId } = socket.data;
 
-pricesNs.on("connection", (socket) => {
-    console.log("client connected to prices namespace:", socket.id);
-    socket.emit("message", { from: "server", text: "hello prices" });
+  addUserSocket(userId, socket.id);
+  console.log("client connected:", socket.id, "userId:", userId);
 
+  socket.on("join-room", (roomId: string) => {
+    if (!roomId) return;
+    socket.join(roomId);
+    addRoomSocket(roomId, socket.id);
+    console.log("socket joined room:", socket.id, roomId);
+  });
+
+  socket.on("disconnect", () => {
+    removeSocket(socket.id, userId);
+    console.log("client disconnected:", socket.id, "userId:", userId);
+  });
 });
-
-positionsNs.on("connection", (socket) => {
-  console.log("client connected to positions namespace:", socket.id);
-
-  socket.emit("message", { from: "server", text: "hello positions" });
-
-});
-
-
-
 
 httpServer.listen(PORT, () => {
   console.log(`ws-gateway listening on ${PORT}`);

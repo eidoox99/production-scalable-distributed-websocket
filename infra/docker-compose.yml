@@ -1,1 +1,46 @@
-# Infra services — add services here when ready
+services:
+  redis:
+    image: redis:7.4.2-alpine
+    ports:
+      - "6379:6379"
+
+  auth-service:
+    build:
+      context: ..
+      dockerfile: apps/auth-service/Dockerfile
+    ports:
+      - "${AUTH_SERVICE_PORT:-3002}:3002"
+    environment:
+      PORT: 3002
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-1h}
+    depends_on:
+      - redis
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: apps/api-gateway/Dockerfile
+    ports:
+      - "${API_GATEWAY_PORT:-3010}:3010"
+    environment:
+      PORT: 3010
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      AUTH_SERVICE_URL: http://auth-service:3002
+    depends_on:
+      - auth-service
+
+  ws-gateway:
+    build:
+      context: ..
+      dockerfile: apps/ws-gateway/Dockerfile
+    ports:
+      - "${WS_GATEWAY_PORT:-3001}:3001"
+    environment:
+      PORT: 3001
+      REDIS_URL: redis://redis:6379
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
+    depends_on:
+      - redis

@@ -1,5 +1,5 @@
 {
-  "name": "@app/api-gateway",
+  "name": "@app/auth-service",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -11,10 +11,11 @@
   },
   "dependencies": {
     "@pkg/shared": "workspace:*",
-    "express": "^5.1.0",
-    "http-proxy-middleware": "^3.0.5"
+    "bcryptjs": "^3.0.2",
+    "express": "^5.1.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
     "@types/express": "^5.0.2",
     "@types/node": "^22.15.21",
     "typescript": "^5.8.3"
