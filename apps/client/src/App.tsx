@@ -1,17 +1,14 @@
-import { BrowserRouter, Link, Navigate, Route, Routes } from "react-router-dom";
-import Prices from "./pages/Prices";
-import Positions from "./pages/Positions";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import Auth from "./pages/Auth";
+import Listen from "./pages/Listen";
 
 function App() {
   return (
     <BrowserRouter>
-      <nav>
-        <Link to="/prices">prices</Link> | <Link to="/positions">positions</Link>
-      </nav>
       <Routes>
-        <Route path="/" element={<Navigate to="/prices" replace />} />
-        <Route path="/prices" element={<Prices />} />
-        <Route path="/positions" element={<Positions />} />
+        <Route path="/" element={<Navigate to="/auth" replace />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/listen" element={<Listen />} />
       </Routes>
     </BrowserRouter>
   );
