@@ -12,7 +12,7 @@ export function clearToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3010";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4010";
 
 type AuthResponse = {
   accessToken: string;

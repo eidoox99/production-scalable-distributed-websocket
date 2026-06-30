@@ -17,5 +17,5 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /prod/api-gateway .
-EXPOSE 3010
+EXPOSE 4010
 CMD ["node", "dist/index.js"]

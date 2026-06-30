@@ -3,7 +3,7 @@ import { loadEnv } from "./env.js";
 loadEnv();
 
 export { loadEnv } from "./env.js";
-export { getRedis, closeRedis } from "./redis.js";
+export { getRedis, createRedisDuplicate, ensureRedis, closeRedis } from "./redis.js";
 export {
   signAccessToken,
   verifyAccessToken,

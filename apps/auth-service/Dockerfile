@@ -17,5 +17,5 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /prod/auth-service .
-EXPOSE 3002
+EXPOSE 4005
 CMD ["node", "dist/index.js"]

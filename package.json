@@ -3,6 +3,11 @@
   "private": true,
   "scripts": {
     "build": "pnpm --filter @pkg/shared build && pnpm --filter @app/auth-service build && pnpm --filter @app/ws-gateway build && pnpm --filter @app/api-gateway build && pnpm --filter @app/client build",
+    "start": "pnpm start:local",
+    "start:local": "pnpm --parallel --filter @app/auth-service --filter @app/ws-gateway --filter @app/api-gateway --filter @app/client start",
+    "start:docker": "docker compose -f infra/docker-compose.yml up -d --build",
+    "docker:up": "docker compose -f infra/docker-compose.yml up -d --build",
+    "docker:down": "docker compose -f infra/docker-compose.yml down",
     "build:shared": "pnpm --filter @pkg/shared build",
     "build:auth-service": "pnpm --filter @app/auth-service build",
     "build:ws-gateway": "pnpm --filter @app/ws-gateway build",
@@ -11,7 +16,8 @@
     "start:auth-service": "pnpm --filter @app/auth-service start",
     "start:ws-gateway": "pnpm --filter @app/ws-gateway start",
     "start:api-gateway": "pnpm --filter @app/api-gateway start",
-    "start:client": "pnpm --filter @app/client start"
+    "start:client": "pnpm --filter @app/client start",
+    "start:redis": "docker compose -f infra/docker-compose.yml up redis -d"
   },
   "packageManager": "pnpm@9.15.0"
 }

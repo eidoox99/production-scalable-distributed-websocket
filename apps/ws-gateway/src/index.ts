@@ -5,6 +5,8 @@ import { Server } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import {
   addRoomToConnection,
+  createRedisDuplicate,
+  ensureRedis,
   getRedis,
   refreshConnectionHeartbeat,
   registerConnection,
@@ -16,22 +18,18 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
+    origin: process.env.CORS_ORIGIN ?? "http://localhost:4020",
   },
 });
 
-const pubClient = getRedis();
-const subClient = pubClient.duplicate();
-io.adapter(createAdapter(pubClient, subClient));
-
-io.use(socketAuthMiddleware);
-
-const PORT = process.env.PORT ?? 3001;
+const PORT = process.env.PORT ?? 4001;
 const GATEWAY_ID = process.env.GATEWAY_ID ?? "gateway_default";
 
 app.get("/health", (_req, res) => {
   res.json({ status: "ok", gatewayId: GATEWAY_ID });
 });
+
+io.use(socketAuthMiddleware);
 
 io.on("connection", async (socket) => {
   const { userId } = socket.data;
@@ -61,6 +59,22 @@ io.on("connection", async (socket) => {
   });
 });
 
-httpServer.listen(PORT, () => {
-  console.log(`ws-gateway [${GATEWAY_ID}] listening on ${PORT}`);
-});
+async function start(): Promise<void> {
+  try {
+    await ensureRedis();
+  } catch {
+    console.error("Redis is not available. Start Redis first:");
+    console.error("  docker compose -f infra/docker-compose.yml up redis -d");
+    process.exit(1);
+  }
+
+  const pubClient = getRedis();
+  const subClient = createRedisDuplicate("sub");
+  io.adapter(createAdapter(pubClient, subClient));
+
+  httpServer.listen(PORT, () => {
+    console.log(`ws-gateway [${GATEWAY_ID}] listening on ${PORT}`);
+  });
+}
+
+start();

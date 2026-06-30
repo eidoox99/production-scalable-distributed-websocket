@@ -4,8 +4,8 @@ import { createProxyMiddleware } from "http-proxy-middleware";
 import { requireAuth } from "./middleware/auth.js";
 
 const app = express();
-const PORT = process.env.PORT ?? 3010;
-const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL ?? "http://localhost:3002";
+const PORT = process.env.PORT ?? 4010;
+const AUTH_SERVICE_URL = process.env.AUTH_SERVICE_URL ?? "http://localhost:4005";
 
 app.use(express.json());
 
